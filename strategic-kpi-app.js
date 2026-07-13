@@ -375,14 +375,21 @@ function renderKpis() {
   $("workspace").innerHTML = `
     <div class="builder-grid">
       <form class="tool-panel" id="quickKpiForm">
-        <h3>Crear KPI</h3>
-        <p>Maximo 2 por meta. Si ya hay dos, toca mejorar los existentes.</p>
+        <h3>Configurar KPI completo</h3>
+        <p>Rellena la ficha completa desde aqui. Maximo 2 KPIs por meta para mantener foco directivo.</p>
         <label>Meta <select name="goalId">${goalOptions()}</select></label>
-        <label>Nombre KPI <input name="name" required /></label>
-        <label>Objetivo <input name="target" type="number" step="0.01" required /></label>
-        <label>Unidad <input name="unit" placeholder="%, h, EUR" /></label>
+        <label>KPI <input name="name" required placeholder="Revenue growth (%)" /></label>
+        <label>Formula <input name="formula" required placeholder="(Current revenue - Previous revenue) / Previous revenue * 100" /></label>
+        <label>Unit of Measure <input name="unit" placeholder="%, Minutes, EUR" /></label>
+        <label>Current Value (Example) <input name="currentValue" type="number" step="0.01" placeholder="0.12" /></label>
+        <label>Target Goal <input name="target" type="number" step="0.01" required /></label>
         <label>Sentido <select name="direction"><option value="higher">Mas alto es mejor</option><option value="lower">Mas bajo es mejor</option></select></label>
+        <label>Lower Threshold (-10%) <input name="lowerThreshold" type="number" step="0.01" placeholder="Se calcula si lo dejas vacio" /></label>
+        <label>Upper Threshold (+10%) <input name="upperThreshold" type="number" step="0.01" placeholder="Se calcula si lo dejas vacio" /></label>
+        <label>Visualization <select name="visualization"><option>Gauge</option><option>Tabla</option><option>Barra</option><option>Linea</option><option>Tarjeta</option></select></label>
+        <label>Alarm Activated <select name="alarmEnabled"><option value="yes">Si, activar alarma si esta en rojo</option><option value="no">No activar alarma</option></select></label>
         <label>Presupuesto accion (k) <input name="budget" type="number" step="0.1" value="1.5" /></label>
+        <label>Corrective Action <input name="correctiveAction" placeholder="Increase promotions and discounts" /></label>
         <button class="btn primary" type="submit">Crear ficha KPI</button>
       </form>
       <div class="kpi-card-grid">${state.kpis.map(renderKpiCard).join("")}</div>
@@ -624,8 +631,14 @@ function addKpi(event) {
     return;
   }
   const id = `k-${Date.now()}`;
-  state.kpis.push(kpi(id, data.name, data.goalId, data.unit, Number(data.target), data.direction, "Valor medido frente al objetivo", "Definir contramedida", Number(data.budget || 0)));
+  const item = kpi(id, data.name, data.goalId, data.unit, Number(data.target), data.direction, data.formula, data.correctiveAction || "Definir contramedida", Number(data.budget || 0));
+  item.lowerThreshold = data.lowerThreshold ? Number(data.lowerThreshold) : item.lowerThreshold;
+  item.upperThreshold = data.upperThreshold ? Number(data.upperThreshold) : item.upperThreshold;
+  item.visualization = data.visualization || "Gauge";
+  item.alarmEnabled = data.alarmEnabled !== "no";
+  state.kpis.push(item);
   state.values[id] = Object.fromEntries(MONTHS.map((month) => [month, ""]));
+  if (data.currentValue !== "") state.values[id][selectedPeriod] = data.currentValue;
   render();
 }
 
