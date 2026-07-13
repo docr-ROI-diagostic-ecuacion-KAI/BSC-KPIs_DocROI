@@ -1,0 +1,10 @@
+{
+  "name": "docroi-bsc-kpi-builder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pildora Doc ROI para construir mapas estrategicos, metas, KPIs, semaforos y reporting mensual exportable.",
+  "scripts": {
+    "start": "node dev-server.cjs",
+    "check": "node --check strategic-kpi-app.js"
+  }
+}
