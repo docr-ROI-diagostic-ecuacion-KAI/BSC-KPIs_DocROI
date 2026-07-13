@@ -6,36 +6,61 @@ const steps = [
     id: "map",
     label: "1. Mapa",
     title: "Mapa estrategico Norton y Kaplan",
-    body: "Dibuja cuatro lineas horizontales: Recursos, Procesos, Clientes y Finanzas. En cada una colocas las metas que quieres alcanzar en tu proyecto, empresa, servicio o proceso.",
+    body: "Un mapa estrategico es la historia visual de la estrategia. No empieza con indicadores: empieza con objetivos conectados. En Balanced Scorecard se ordena la conversacion en perspectivas para que la direccion vea resultados, clientes, procesos y capacidades como un sistema.",
     rule: "No empieces por el indicador. Empieza por la meta estrategica y su lugar en el mapa.",
+    deep: [
+      ["Que es", "El mapa estrategico documenta los objetivos que persigue una organizacion y muestra relaciones causa-efecto entre ellos. Kaplan y Norton lo popularizaron como complemento del Balanced Scorecard para traducir la estrategia en accion."],
+      ["Como se lee", "Aunque la mejora suele nacer en Recursos, el directivo suele mirar primero Finanzas: si el margen esta en rojo, baja a Clientes, Procesos y Recursos para encontrar la causa."],
+      ["Como se construye", "Escribe pocas metas, claras y accionables. Cada meta debe poder explicarse con un verbo de mejora: aumentar, reducir, acelerar, elevar, mejorar, optimizar."],
+    ],
   },
   {
     id: "relations",
     label: "2. Causa-efecto",
     title: "Journey relacional de metas",
-    body: "Conecta primero las metas dentro de Recursos. Despues enlaza Recursos con Procesos, Procesos con Clientes y Clientes con Finanzas. Asi aparece el modelo causa-efecto.",
+    body: "La relacion causa-efecto es la hipotesis directiva: creemos que si mejora una meta, ayudara a mejorar otra. Por eso las flechas deben ir de meta a meta, no de perspectiva a perspectiva.",
     rule: "Una flecha debe explicar una hipotesis directiva: si mejora A, entonces deberia mejorar B.",
+    deep: [
+      ["Hipotesis", "Una flecha no es decoracion. Es una apuesta de gestion: mejor dato -> mejor proceso -> mejor experiencia -> mejor ingreso."],
+      ["Validacion", "Cuando llegan los datos mensuales, el mapa permite revisar si la hipotesis funciona. Si Recursos mejora pero Finanzas no, quizas falta una meta intermedia o la relacion estaba mal planteada."],
+      ["Uso docente", "Para aprender, obliga a verbalizar cada flecha: 'esta meta impacta en esta otra porque...'. Si no se puede explicar, no debe dibujarse."],
+    ],
   },
   {
     id: "kpis",
     label: "3. Fichas KPI",
     title: "Configuracion de indicadores",
-    body: "Ve meta por meta y define maximo 2 KPIs. Cada ficha recoge objetivo, formula, unidad, fuente, responsable, alarma, accion correctora y presupuesto.",
+    body: "Un KPI es un indicador clave de rendimiento. En castellano: una senal prioritaria que dice si una meta esta avanzando o si necesita intervencion. No existe buen KPI sin objetivo directivo previo.",
     rule: "Dos KPIs bien elegidos por meta valen mas que diez indicadores imposibles de gobernar.",
+    deep: [
+      ["Definicion", "KPI no significa 'cualquier dato'. Es una medida clave vinculada a una meta, con formula, unidad, objetivo, umbral, responsable y decision asociada."],
+      ["Objetivo", "El objetivo es la referencia de direccion. Sin objetivo, el dato no sabe si esta bien o mal. Por eso la ficha exige Target Goal y umbrales."],
+      ["KPI dinamico", "Un KPI util debe activar triggers: alarma roja, alerta amarilla, revision azul, accion correctora, presupuesto y responsable. Medir sin activar decision es solo decorar un cuadro."],
+    ],
   },
   {
     id: "tracking",
     label: "4. Seguimiento",
     title: "Tabla mensual de valores",
-    body: "Introduce cada mes el valor real del KPI. La herramienta calcula estado, alarma, presupuesto y accion recomendada para construir el cuadro de mando.",
+    body: "El seguimiento convierte la ficha en gestion. El usuario introduce el valor mensual y el sistema calcula el porcentaje de cumplimiento, el color, la alarma y la accion.",
     rule: "Tres amarillos seguidos se convierten en rojo: el riesgo sostenido tambien es problema.",
+    deep: [
+      ["Valor", "El valor mensual es la observacion real: manzanas, minutos, euros, satisfaccion, NPS, conversion, churn o productividad."],
+      ["Porcentaje", "El porcentaje de cumplimiento es la lectura comparable. Permite ver si un KPI de euros y otro de minutos estan cerca o lejos de su objetivo."],
+      ["Semaforo", "Rojo activa correccion. Amarillo exige vigilancia. Verde mantiene disciplina. Azul invita a revisar si el objetivo se ha quedado facil."],
+    ],
   },
   {
     id: "reporting",
     label: "5. Reporting",
     title: "Mapa con semaforos y bajada a Excel",
-    body: "El mapa final muestra perspectivas, metas, KPIs, colores, presupuesto corrector y acciones. La tabla se puede descargar para Data Studio o seguimiento operativo.",
+    body: "El reporting debe explicar la decision: que KPI falla, que meta afecta, que presupuesto requiere y que parte del mapa causa-efecto puede estar sufriendo.",
     rule: "El reporting no solo ensena que KPI falla: ensena que parte del modelo causal esta sufriendo.",
+    deep: [
+      ["Vista directiva", "El orden Finanzas -> Clientes -> Procesos -> Recursos ayuda a empezar por la consecuencia y bajar hasta la causa."],
+      ["Vista tecnica", "La tabla tipo Excel conserva todos los campos necesarios para Data Studio, auditoria y seguimiento mensual."],
+      ["Decision", "Cada rojo debe tener contramedida presupuestada. Cada azul debe abrir una pregunta: ¿somos excelentes o el objetivo era demasiado facil?"],
+    ],
   },
 ];
 
@@ -94,6 +119,8 @@ let activeStep = "map";
 let selectedKpi = null;
 let selectedGoal = null;
 let selectedPeriod = "Dic";
+let trackingPerspectiveFilter = "all";
+let trackingStatusFilter = "all";
 
 function goal(id, name, perspectiveId, owner) {
   return { id, name, perspectiveId, owner, priority: "Alta", description: "Meta estrategica del mapa causa-efecto." };
@@ -129,7 +156,14 @@ function normalizeState(data) {
     const ref = seed.perspectives.find((item) => item.id === p.id);
     return { ...p, order: ref?.order ?? p.order, color: ref?.color ?? p.color };
   }).sort((a, b) => a.order - b.order);
-  data.goals = (data.goals || []).map((g) => ({ priority: "Alta", description: "Meta estrategica del mapa causa-efecto.", ...g }));
+  data.goals = (data.goals || []).map((g) => ({
+    priority: "Alta",
+    description: "Meta estrategica del mapa causa-efecto.",
+    expectedResult: "",
+    horizon: "",
+    hypothesis: "",
+    ...g,
+  }));
   data.kpis = (data.kpis || []).map((item) => {
     const target = Number(item.target || 0);
     const direction = item.direction || "higher";
@@ -259,7 +293,6 @@ function statusLabel(status) {
 function render() {
   save();
   renderMenu();
-  renderTabs();
   renderTraining();
   renderWorkspace();
 }
@@ -268,16 +301,13 @@ function renderMenu() {
   $("stepMenu").innerHTML = steps.map((step) => `<button class="${activeStep === step.id ? "active" : ""}" data-step="${step.id}" type="button">${step.label}</button>`).join("");
 }
 
-function renderTabs() {
-  $("workTabs").innerHTML = steps.map((step) => `<button class="${activeStep === step.id ? "active" : ""}" data-step="${step.id}" type="button">${step.title}</button>`).join("");
-}
-
 function renderTraining() {
   const step = steps.find((item) => item.id === activeStep);
   $("trainingKicker").textContent = step.label;
   $("trainingTitle").textContent = step.title;
   $("trainingBody").textContent = step.body;
   $("trainingRule").textContent = step.rule;
+  $("trainingDeep").innerHTML = step.deep.map(([title, text]) => `<article><strong>${title}</strong><span>${text}</span></article>`).join("");
 }
 
 function renderWorkspace() {
@@ -292,11 +322,16 @@ function renderMapBuilder() {
   $("workspace").innerHTML = `
     <div class="builder-grid">
       <form class="tool-panel" id="goalForm">
-        <h3>Crear meta estrategica</h3>
-        <p>Coloca cada meta en una perspectiva. Piensa en resultados deseados, no en tareas.</p>
+        <h3>Ficha meta estrategica</h3>
+        <p>Completa la meta desde el inicio. Despues podras editarla, pero no debe nacer vacia.</p>
         <label>Perspectiva <select name="perspectiveId">${state.perspectives.map((p) => `<option value="${p.id}">${p.name}</option>`).join("")}</select></label>
         <label>Meta <input name="name" required placeholder="Ej. Mejorar calidad del dato" /></label>
         <label>Responsable <input name="owner" placeholder="Area responsable" /></label>
+        <label>Prioridad <select name="priority"><option>Alta</option><option>Media</option><option>Baja</option></select></label>
+        <label>Resultado esperado <input name="expectedResult" placeholder="Que debe mejorar si la meta avanza" /></label>
+        <label>Horizonte <input name="horizon" placeholder="3 meses, 6 meses, anual..." /></label>
+        <label class="span-2">Descripcion <input name="description" placeholder="Define la meta, su alcance y por que importa" /></label>
+        <label class="span-2">Hipotesis causa-efecto <input name="hypothesis" placeholder="Si mejora esta meta, entonces deberia mejorar..." /></label>
         <button class="btn primary" type="submit">Anadir meta</button>
       </form>
       <div class="bsc-lanes">${state.perspectives.map(renderPerspectiveLane).join("")}</div>
@@ -409,8 +444,11 @@ function renderKpiCard(item) {
 }
 
 function renderTracking() {
+  const rows = filteredKpis();
   $("workspace").innerHTML = `
-    <div class="table-actions">
+    <div class="table-actions data-filters">
+      <label>Perspectiva <select id="trackingPerspectiveFilter"><option value="all">Todas</option>${state.perspectives.map((p) => `<option value="${p.id}" ${trackingPerspectiveFilter === p.id ? "selected" : ""}>${p.name}</option>`).join("")}</select></label>
+      <label>Estado <select id="trackingStatusFilter"><option value="all">Todos</option>${["red","amber","green","blue","empty"].map((s) => `<option value="${s}" ${trackingStatusFilter === s ? "selected" : ""}>${statusLabel(s)}</option>`).join("")}</select></label>
       <button class="btn secondary" id="downloadCsv" type="button">Descargar CSV</button>
       <button class="btn secondary" id="downloadXlsx" type="button">Descargar Excel</button>
       <button class="btn ghost" id="loadDemoValues" type="button">Recargar valores demo</button>
@@ -418,16 +456,42 @@ function renderTracking() {
     <div class="tracking-wrap">
       <table class="tracking-table">
         <thead><tr><th>Perspectiva</th><th>Meta</th><th>KPI</th><th>Objetivo</th>${MONTHS.map((m) => `<th>${m}<small>valor + %</small></th>`).join("")}<th>Estado</th><th>Accion</th><th>Presupuesto</th></tr></thead>
-        <tbody>${state.kpis.map(renderTrackingRow).join("")}</tbody>
+        <tbody>${rows.map(renderTrackingRow).join("")}</tbody>
       </table>
     </div>`;
   document.querySelectorAll("[data-kpi-value]").forEach((input) => input.addEventListener("change", updateValue));
+  $("trackingPerspectiveFilter").addEventListener("change", (event) => {
+    trackingPerspectiveFilter = event.target.value;
+    render();
+  });
+  $("trackingStatusFilter").addEventListener("change", (event) => {
+    trackingStatusFilter = event.target.value;
+    render();
+  });
   $("downloadCsv").addEventListener("click", downloadCsv);
   $("downloadXlsx").addEventListener("click", downloadXlsx);
   $("loadDemoValues").addEventListener("click", () => {
     state.values = structuredClone(seed.values);
     render();
   });
+}
+
+function filteredKpis() {
+  return state.kpis
+    .slice()
+    .sort((a, b) => {
+      const ga = state.goals.find((g) => g.id === a.goalId);
+      const gb = state.goals.find((g) => g.id === b.goalId);
+      const pa = state.perspectives.find((p) => p.id === ga?.perspectiveId)?.order ?? 99;
+      const pb = state.perspectives.find((p) => p.id === gb?.perspectiveId)?.order ?? 99;
+      return pa - pb || a.name.localeCompare(b.name);
+    })
+    .filter((item) => {
+      const goalItem = state.goals.find((g) => g.id === item.goalId);
+      const perspectiveOk = trackingPerspectiveFilter === "all" || goalItem?.perspectiveId === trackingPerspectiveFilter;
+      const statusOk = trackingStatusFilter === "all" || kpiStatus(item) === trackingStatusFilter;
+      return perspectiveOk && statusOk;
+    });
 }
 
 function renderTrackingRow(item) {
@@ -445,7 +509,7 @@ function renderMonthCell(item, month) {
   const status = monthStatus(item, month);
   const value = state.values[item.id]?.[month] ?? "";
   const pct = value === "" ? "-" : `${kpiSuccessPct(item, value)}%`;
-  return `<td><div class="month-cell status-${status}"><input class="month-input" data-kpi-value="${item.id}" data-month="${month}" value="${value}" /><strong>${pct}</strong><small>${formatValue(value, item.unit)}</small></div></td>`;
+  return `<td><div class="month-cell status-${status}"><input class="month-input" data-kpi-value="${item.id}" data-month="${month}" value="${value}" aria-label="${item.name} ${month} en ${item.unit || "valor"}" /><strong>${pct}</strong></div></td>`;
 }
 
 function renderReporting() {
@@ -562,7 +626,15 @@ function kpisForGoal(goalId) {
 function addGoal(event) {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.currentTarget));
-  state.goals.push(goal(`g-${Date.now()}`, data.name, data.perspectiveId, data.owner || "Responsable"));
+  const item = goal(`g-${Date.now()}`, data.name, data.perspectiveId, data.owner || "Responsable");
+  Object.assign(item, {
+    priority: data.priority,
+    expectedResult: data.expectedResult,
+    horizon: data.horizon,
+    description: data.description || item.description,
+    hypothesis: data.hypothesis,
+  });
+  state.goals.push(item);
   render();
 }
 
@@ -593,6 +665,9 @@ function saveGoal(event) {
     owner: data.owner,
     priority: data.priority,
     description: data.description,
+    expectedResult: data.expectedResult,
+    horizon: data.horizon,
+    hypothesis: data.hypothesis,
   });
   $("goalDialog").close();
   render();
@@ -772,7 +847,7 @@ document.addEventListener("click", (event) => {
   if (step) {
     activeStep = step.dataset.step;
     render();
-    setTimeout(() => document.querySelector(".work-frame")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+    setTimeout(() => document.querySelector(".learning-frame")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   }
   const edit = event.target.closest("[data-edit-kpi]");
   if (edit) openKpi(edit.dataset.editKpi);

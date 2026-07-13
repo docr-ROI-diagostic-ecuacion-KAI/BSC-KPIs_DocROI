@@ -38,12 +38,11 @@
       <main class="kpi-main">
         <section class="intro-panel" id="intro">
           <div>
-            <p class="eyebrow">Configurador de Balanced Scorecard</p>
-            <h1>Construye el mapa causa-efecto antes de pedirle numeros al KPI.</h1>
+            <p class="eyebrow">Pildora BSC KPI Doc ROI</p>
+            <h1>Del objetivo al KPI accionable</h1>
             <p>
-              Primero dibuja las cuatro perspectivas de Kaplan y Norton. Despues coloca metas en cada perspectiva,
-              conecta el journey relacional desde Recursos hasta Finanzas, configura maximo 2 KPIs por meta y termina
-              con una tabla mensual lista para seguimiento y Data Studio.
+              Aprende a ordenar metas, conectar causa-efecto y configurar indicadores que no solo midan:
+              tambien activen alarmas, contramedidas, presupuesto y decisiones de mejora.
             </p>
           </div>
           <div class="hero-side">
@@ -62,6 +61,7 @@
             <p class="eyebrow" id="trainingKicker">Paso 1</p>
             <h2 id="trainingTitle">Mapa estrategico Norton y Kaplan</h2>
             <p id="trainingBody"></p>
+            <div id="trainingDeep" class="training-deep"></div>
           </div>
           <div class="rule-card">
             <strong>Regla de oro</strong>
@@ -70,7 +70,6 @@
         </section>
 
         <section class="work-frame">
-          <div class="work-tabs" id="workTabs"></div>
           <div id="workspace"></div>
         </section>
 
@@ -158,7 +157,10 @@
           <label>Perspectiva <select name="perspectiveId" id="dialogPerspective"></select></label>
           <label>Responsable <input name="owner" /></label>
           <label>Prioridad <select name="priority"><option>Alta</option><option>Media</option><option>Baja</option></select></label>
+          <label>Resultado esperado <input name="expectedResult" /></label>
+          <label>Horizonte <input name="horizon" /></label>
           <label class="span-2">Descripcion <input name="description" /></label>
+          <label class="span-2">Hipotesis causa-efecto <input name="hypothesis" /></label>
         </div>
         <div class="dialog-actions">
           <button class="btn danger" id="deleteGoal" type="button">Eliminar meta</button>
